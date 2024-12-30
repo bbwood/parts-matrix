@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parts Matrix Calculator</title>
+  <style>
+    body {
+      background-color: #f8f8f8;
+      padding: 16px;
+      max-width: 1280px;
+      margin: 0 auto;
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.25rem;
+    }
+
+    h1, h3 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .flex-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flex-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .justify-between {
+      justify-content: center;
+    }
+
+    .gap-4 {
+      gap: 16px;
+    }
+
+    .gap-8 {
+      gap: 32px;
+    }
+
+    label {
+      margin-right: 8px;
+    }
+
+    input[type="number"] {
+      width: 120px;
+      text-align: center;
+      font-size: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    #result,
+    #m-result {
+      margin-left: 12px;
+      font-size: 24px;
+      color: rgb(2 132 199);
+    }
+
+    #markup-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+
+    #calc {
+      margin: 48px 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    th {
+      text-align: center;
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+    }
+
+    td {
+      text-align: center;
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+    }
+
+    @media (min-width: 1024px) {
+      #calc {
+        flex-direction: row;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Parts Matrix Calculator</h1>
+
+  <div id="calc">
+    <label for="cost-price">
+      Enter Cost ($):
+    </label>
+    <input type="number" id="cost-price" placeholder="Cost Price" step="0.01" />
+    <div>Matrix Price: </div>
+    <div id="result">$0.00</div>
+    <div>Maintenance Price: </div>
+    <div id="m-result">$0.00</div>
+  </div>
+
+  <table id="markup-table">
+    <thead>
+      <tr>
+        <th>Cost Start ($)</th>
+        <th>Cost End ($)</th>
+        <th>Markup</th>
+        <th>Gross Profit %</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="calc" class="flex-row justify-between gap-8">
+    <div>
+      <h3>Non-Matrix Items</h3>
+      <ul>
+        <li>Oil Filters: +$10</li>
+        <li>Batteries: +$50</li>
+        <li>Tires: +$20 per tire</li>
+        <li>Engines: +$750</li>
+        <li>Transmissions: +$750</li>
+        <li>Used Parts: 1.25 Markup</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Maintenance Items</h3>
+      <ul>
+        <li>Oil</li>
+        <li>Brake Pads</li>
+        <li>Brake Rotors</li>
+        <li>Brake Calipers</li>
+        <li>Air Filters</li>
+        <li>Wipers</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const markupMatrix = [
+      {start: 0.00, end: 10.00, multiplier: 3.75},
+      {start: 10.01, end: 200.00, multiplier: 2.00},
+      {start: 200.01, end: 999999, multiplier: 1.75},
+    ];
+
+    function buildMarkupTable() {
+      const tableBody = document.getElementById("markup-table").getElementsByTagName("tbody")[0];
+      tableBody.innerHTML = '';
+
+      for (const rowData of markupMatrix) {
+        const row = tableBody.insertRow();
+        const grossProfitPercent = ((rowData.multiplier - 1) / rowData.multiplier) * 100;
+        row.innerHTML = `
+          <td class="text-center px-4 py-2 border">${rowData.start.toFixed(2)}</td>
+          <td class="text-center px-4 py-2 border">${rowData.end.toFixed(2)}</td>
+          <td class="text-center px-4 py-2 border">${rowData.multiplier.toFixed(2)}</td>
+          <td class="text-center px-4 py-2 border">${grossProfitPercent.toFixed(0)}%</td>
+        `;
+      }
+    }
+
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+
+    function calculateMatrixPrice() {
+      const costPrice = parseFloat(document.getElementById('cost-price').value);
+      for (const row of markupMatrix) {
+        if (costPrice >= row.start && costPrice <= row.end) {
+          return formatter.format(costPrice * row.multiplier);
+        }
+      }
+      return '$0.00';
+    }
+
+    function calculateMaintenancePrice() {
+      const costPrice = parseFloat(document.getElementById('cost-price').value);
+      if (costPrice) {
+        const maintenancePrice = costPrice * 1.75;
+        return formatter.format(maintenancePrice);
+      }
+      return '$0.00';
+    }
+
+    const costPriceInput = document.getElementById('cost-price');
+    costPriceInput.addEventListener('input', function (event) {
+      const salePrice = calculateMatrixPrice();
+      const maintenancePrice = calculateMaintenancePrice();
+
+      document.getElementById('result').textContent = `${salePrice}`;
+      document.getElementById('m-result').textContent = `${maintenancePrice}`;
+    });
+
+    buildMarkupTable();
+  </script>
+
+</body>
+
+</html>
